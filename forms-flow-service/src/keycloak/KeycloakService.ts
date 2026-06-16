@@ -16,6 +16,8 @@ class KeycloakService {
   private _tokenParsed: KeycloakTokenParsed | undefined;
   private timerId: ReturnType<typeof setTimeout> | null = null;
   private userData: any;
+  private scope: any = {};
+  private keycloakInitConfig: KeycloakInitOptions;
 
   private constructor(
     url: string,
@@ -26,20 +28,24 @@ class KeycloakService {
     this._keycloakConfig = {
       url: url,
       realm: realm,
-      clientId: tenantId ? `${tenantId}-${clientId}` : clientId,
+      clientId,
     };
     this.kc = new Keycloak(this._keycloakConfig);
-  }
-
-  /**
+    const scope = tenantId ? `openid organization:${tenantId}` : `openid organization:*`;
+    /**
    * used to call the `init` method from keycloak
    */
-  private keycloakInitConfig: KeycloakInitOptions = {
-    onLoad: "check-sso",
-    silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
-    pkceMethod: "S256",
-    checkLoginIframe: false,
-  };
+    this.keycloakInitConfig = {
+      onLoad: "check-sso",
+      silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
+      pkceMethod: "S256",
+      checkLoginIframe: false,
+      scope,
+    };
+  }
+
+  
+
 
   private login(): void {
     this.kc?.login();
